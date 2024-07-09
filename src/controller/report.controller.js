@@ -35,7 +35,7 @@ class Reports
         {
             const totalCustomers = await customerModel.countDocuments();
             const activeCustomers = await customerModel.countDocuments({ status: 'active' });
-            const conversionRate = (activeCustomers / totalCustomers) * 100;
+            const conversionRate = ((activeCustomers / totalCustomers) * 100).toFixed(2);
         
             res.status(200).json({ totalCustomers, activeCustomers, conversionRate });
           } 

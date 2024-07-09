@@ -37,7 +37,7 @@ class Purchase
                 productName,
                 amount,
                 quantity,
-                totalPrice: amount * quantity
+                totalPrice: (amount * quantity).toFixed(2)
             })
 
             await customerModel.findByIdAndUpdate(customer._id,

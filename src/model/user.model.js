@@ -23,7 +23,6 @@ const userSchema = new Schema(
 // Middleware: hash the password was defined before the model was compiled
 userSchema.pre('save', async function(next) {
     try {
-        console.log(this.password);
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(this.password, salt)
         this.password = hashedPassword

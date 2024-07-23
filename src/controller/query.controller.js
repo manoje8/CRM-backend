@@ -43,6 +43,25 @@ class Query
         }
     }
 
+    static async getUserQuery(req, res, next)
+    {
+        const {email} = req.params
+        try 
+        {
+            const findUser = await userModel.findOne({email})
+            if(!findUser) return res.status(400).send({message: "User not found"})
+            const userQuery = await queryModel.find({userId: findUser._id})
+
+            if(!userQuery) return res.status(400).send({message: "Query not found"})
+            res.status(200).send(userQuery)
+        } 
+        catch (error) 
+        {
+            console.log("Error in getting customer Query", error);
+            next(error)
+        }
+    }
+
     static async updateQueryById(req, res, next)
     {
         const {queryId, status} = req.body;

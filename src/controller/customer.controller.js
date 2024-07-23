@@ -7,13 +7,11 @@ class Customer
     static async createCustomer(req, res, next)
     {
         const {name, company, email, phone, title, address, source, description, communicationMethod, fabricTypes, colors, brand} = req.body
-        const {aud} = req.payload
         try 
         {
             const doesExist = await customerModel.findOne({email})
             if(doesExist) return res.status(400).send({message: `${doesExist.email} is already been used. Please select different one.`})
             await customerModel.create({
-                userId: aud,
                 name,
                 email,
                 company,
@@ -34,7 +32,7 @@ class Customer
         } 
         catch (error) 
         {
-            console.log("Error in while creating customer: ", error);
+            console.log("Error in while creating customer: ", error.message);
             next(error)
         }
         
@@ -45,7 +43,8 @@ class Customer
         try 
         {
             const customer = await customerModel.find();
-            if(customer.length === 0) return res.send({message: "Customer List is empty"})
+
+            if(customer.length === 0) return res.status(300).send({message: "Customer List is empty"})
 
             res.status(200).send(customer)
         } 
@@ -69,23 +68,6 @@ class Customer
         catch (error) 
         {
             console.log("Error in fetching customer details by mail: ", error);
-            next(error)
-        }
-    }
-
-    // user
-    static async getCustomerByToken(req, res, next)
-    {
-        const {aud} = req.payload
-        try 
-        {
-            const customer = await customerModel.findOne({userId: aud})
-            if(!customer) return res.status(400).send({message: "Update your profile"})
-            res.status(200).send(customer)
-        } 
-        catch (error) 
-        {
-            console.log("Error in fetching customer details by token: ", error);
             next(error)
         }
     }
@@ -130,15 +112,44 @@ class Customer
         }
     }
 
+    // Assign service to employee
+    static async updateCustomerAssign(req, res, next)
+    {
+        const { id, userMail, role } = req.body;
+        try {
+            if (role === 'manager') {
+                const update = await customerModel.findOneAndUpdate(
+                    { _id: id}, 
+                    { $set: { assignManager: userMail } }, // Add the new manager
+                    { new: true }
+                );
+        
+                res.status(200).send({ message: "Manager Assigned successfully", update });
+            }
+        
+            if (role === 'employee') {
+                const update = await customerModel.findOneAndUpdate(
+                    { _id: id }, 
+                    { $set: { assignEmployee: userMail, assignDate: new Date() } }, // Add the new employee
+                    { new: true }
+                );
+    
+                res.status(200).send({ message: "Employee Assigned successfully", update });
+            }
+        } catch (error) {
+            res.status(500).send({ message: error.message });
+        }
+    }
+
     static async deleteCustomer(req, res, next)
     {
         const {id} = req.params
         try 
         {
-            const customer = await customerModel.deleteOne({_id:id})
-            if(!customer) return res.status(400).send({message: "Customer not found"})
-            const queries = await queryModel.deleteMany({_id:id})
-            const comm = await communicationModel.deleteMany({_id: id})
+            const customer = await customerModel.findByIdAndDelete(id)
+            if(!customer) return res.status(400).send({message: "Customer not deleted"})
+            await queryModel.deleteMany({_id:id})
+            await communicationModel.deleteMany({_id: id})
             res.status(200).send({message: "Customer deleted successfully"})
         } 
         catch (error) 

@@ -89,7 +89,7 @@ class User
 
             const accessToken = await signAccessToken(user._id);
 
-            res.status(200).send({message: "Successfully signed", userName: user.name, accessToken, role: user.role})
+            res.status(200).send({message: "Successfully signed", userName: user.name, accessToken, role: user.role, email: user.email})
         } catch (error) 
         {
             console.log(error);
@@ -104,7 +104,7 @@ class User
         try 
         {
             const user = await userModel.findOne({email})
-            if(user.role === "admin") res.status(400).send({message: "UnAuthorized"})
+            if(user.role === "admin") return res.status(400).send({message: "UnAuthorized"})
             if(!user.isActivated) return res.status(400).send({message: "Your account is not activated"})
             if(!user) return res.status(400).send({message: "User not registered"}) 
                 
@@ -168,19 +168,54 @@ class User
         }
     }
 
-    static async getUser(req, res, next)
+
+    static async getAllUsers(req, res, next)
     {
-        const {aud} = req.payload;
         try 
         {
-            const findUser = await userModel.findById(aud)
-
+            const findUser = await userModel.find({role: {$ne: "admin"}})
             res.status(200).send(findUser)
         } 
         catch (error) 
         {
-            console.log("Error in fetching User: ", error);
+            console.log("Error in fetching all users: ", error);
             next(error)
+        }
+    }
+
+    static async deleteUser(req, res, next)
+    {
+        const {email} = req.params
+        try 
+        {
+            const user = await userModel.deleteOne({email})
+            if(!user) return res.status(400).send({message: "User not found"})
+            res.status(200).send({message: `successfully deleted`})
+        } 
+        catch (error) 
+        {
+            console.log("Error in deleting user: ", error);
+            next(error)
+        }
+    }
+
+    static async updateUserRole(req, res, next)
+    {
+        const {id, role} = req.body
+        try 
+        {
+            const updateRole = await userModel.findByIdAndUpdate(id,
+                {$set: {role:role}},
+                {new : true}
+            )
+
+            res.status(200).send({message: "Role updated successfully"})
+        } 
+        catch (error) 
+        {
+            console.log("Error in Updating user role: ", error);
+            next(error)
+            
         }
     }
 }

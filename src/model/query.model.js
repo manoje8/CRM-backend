@@ -2,7 +2,7 @@ import { model, Schema } from "mongoose";
 
 const querySchema = new Schema(
     {
-        customerId: {type: Schema.Types.ObjectId, ref: "customers"},
+        userId: {type: Schema.Types.ObjectId, ref: "users"},
         subject: { type: String, required: true },
         description: { type: String, required: true},
         solution: {type: [String], default: []},

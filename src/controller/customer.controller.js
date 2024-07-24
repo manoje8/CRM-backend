@@ -1,5 +1,4 @@
 import customerModel from "../model/customer.model.js";
-import queryModel from "../model/query.model.js";
 import communicationModel from "../model/communication.model.js";
 
 class Customer
@@ -148,8 +147,7 @@ class Customer
         {
             const customer = await customerModel.findByIdAndDelete(id)
             if(!customer) return res.status(400).send({message: "Customer not deleted"})
-            await queryModel.deleteMany({_id:id})
-            await communicationModel.deleteMany({_id: id})
+            await communicationModel.deleteMany({customerId: id})
             res.status(200).send({message: "Customer deleted successfully"})
         } 
         catch (error) 

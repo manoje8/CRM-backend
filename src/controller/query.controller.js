@@ -50,7 +50,7 @@ class Query
         {
             const findUser = await userModel.findOne({email})
             if(!findUser) return res.status(400).send({message: "User not found"})
-            const userQuery = await queryModel.find({userId: findUser._id})
+            const userQuery = await queryModel.find({userId: findUser._id}).populate('userId')
 
             if(!userQuery) return res.status(400).send({message: "Query not found"})
             res.status(200).send(userQuery)
